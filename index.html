@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SG Primary Chinese Flashcards</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --accent: #ff6b6b;
+            --bg: #f8fafc;
+            --card-front-bg: #ffffff;
+            --card-back-bg: #f1f5f9;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        /* Filters */
+        .filter-group {
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button.filter-btn {
+            background-color: #e2e8f0;
+            border: none;
+            color: var(--text-dark);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        button.filter-btn.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* 3D Card Container */
+        .flashcard-wrapper {
+            perspective: 1000px;
+            width: 100%;
+            height: 380px;
+            margin: 20px 0;
+            cursor: pointer;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+
+        /* Front Face */
+        .card-front {
+            background-color: var(--card-front-bg);
+            border: 2px solid #e2e8f0;
+            justify-content: center;
+        }
+
+        .chinese-char {
+            font-size: 5.5rem;
+            font-weight: bold;
+            color: #0f172a;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        .click-hint {
+            position: absolute;
+            bottom: 15px;
+            left: 0;
+            right: 0;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Back Face */
+        .card-back {
+            background-color: var(--card-back-bg);
+            transform: rotateY(180deg);
+            border: 2px solid #cbd5e1;
+            text-align: left;
+        }
+
+        /* Audio Controls */
+        .audio-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .pinyin {
+            font-size: 1.8rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .speaker-btn {
+            background-color: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+
+        .speaker-btn:hover {
+            background-color: #f1f5f9;
+            transform: scale(1.05);
+        }
+
+        .english {
+            font-size: 1.15rem;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        /* Stroke Writing Practice Grid (Only for Write cards) */
+        .stroke-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            background-color: #fff4f4;
+            border: 1px dashed var(--accent);
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+
+        .stroke-grid {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 4px;
+        }
+
+        .grid-box {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #fca5a5;
+            background-image: linear-gradient(to bottom, transparent 49%, #fca5a5 49%, #fca5a5 51%, transparent 51%),
+                              linear-gradient(to right, transparent 49%, #fca5a5 49%, #fca5a5 51%, transparent 51%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            color: #ef4444;
+            font-weight: 300;
+            font-family: "STKaiti", "Kaiti", serif;
+        }
+
+        .stroke-title {
+            font-size: 0.75rem;
+            color: var(--accent);
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* Context Box */
+        .example-box {
+            background-color: #ffffff;
+            border-left: 4px solid var(--primary);
+            padding: 10px 12px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.85rem;
+            box-sizing: border-box;
+        }
+
+        .example-title {
+            font-weight: bold;
+            color: var(--text-light);
+            margin-bottom: 2px;
+        }
+
+        /* Buttons */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .nav-btn {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background-color: #f1f5f9;
+        }
+
+        .counter {
+            font-weight: 500;
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>欢乐伙伴 Flashcards</h1>
+    <p class="subtitle">MOE Singapore Primary Chinese Syllabus</p>
+
+    <!-- Filters -->
+    <div class="filter-group" id="grade-filters">
+        <button class="filter-btn active" onclick="setGrade('P1')">Primary 1</button>
+        <button class="filter-btn" onclick="setGrade('P2')">Primary 2</button>
+        <button class="filter-btn" onclick="setGrade('P3/4')">Primary 3/4</button>
+    </div>
+
+    <div class="filter-group" id="type-filters">
+        <button class="filter-btn active" onclick="setType('read')">识读字 (Read)</button>
+        <button class="filter-btn" onclick="setType('write')">识写字 (Write)</button>
+    </div>
+
+    <!-- The Flashcard -->
+    <div class="flashcard-wrapper" onclick="flipCard()">
+        <div class="flashcard" id="card">
+            <!-- Front Face -->
+            <div class="card-face card-front">
+                <div class="chinese-char" id="char-display">衣服</div>
+                <div class="click-hint">Click to Flip</div>
+            </div>
+            <!-- Back Face -->
+            <div class="card-face card-back">
+                <!-- Audio and Translation Header -->
+                <div>
+                    <div class="audio-row">
+                        <div class="pinyin" id="pinyin-display">yī fu</div>
+                        <button class="speaker-btn" onclick="speakWord(event)" title="Listen Pronunciation">
+                            🔊
+                        </button>
+                    </div>
+                    <div class="english" id="english-display">clothes / clothing</div>
+                </div>
+
+                <!-- Stroke Order Writing Guide Grid -->
+                <div class="stroke-container" id="stroke-container">
+                    <span class="stroke-title">Writing Grid (识写字)</span>
+                    <div class="stroke-grid" id="stroke-grid">
+                        <!-- Dynamic cells go here -->
+                    </div>
+                </div>
+
+                <!-- Example Sentence Box -->
+                <div class="example-box">
+                    <div class="example-title">Example Sentence:</div>
+                    <div id="example-display">这件衣服太小了，不合适。</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="controls">
+        <button class="nav-btn" onclick="prevCard(event)">← Previous</button>
+        <span class="counter" id="card-counter">Card 1 of 5</span>
+        <button class="nav-btn" onclick="nextCard(event)">Next →</button>
+    </div>
+</div>
+
+<script>
+    // Robust Expanded Database (Standard Core Vocab from MOE Syllabus Chapters)
+    const wordDatabase = {
+        'P1': {
+            'read': [
+                { word: '衣服', pinyin: 'yī fu', english: 'clothes / clothing', sentence: '这件新衣服很漂亮。' },
+                { word: '洗澡', pinyin: 'xǐ zǎo', english: 'to take a shower / bath', sentence: '睡觉前洗澡会觉得很舒服。' },
+                { word: '眼睛', pinyin: 'yǎn jing', english: 'eyes', sentence: '小狗用大大的眼睛看着我。' },
+                { word: '打球', pinyin: 'dǎ qiú', english: 'to play ball games', sentence: '星期六下午我们一起去打球吧。' },
+                { word: '颜色', pinyin: 'yán sè', english: 'color', sentence: '你最喜欢什么颜色？' },
+                { word: '谢谢', pinyin: 'xiè xie', english: 'thank you', sentence: '谢谢你帮我拿书包。' },
+                { word: '朋友', pinyin: 'péng you', english: 'friend', sentence: '他是我的同班同学，也是好朋友。' },
+                { word: '老师', pinyin: 'lǎo shī', english: 'teacher', sentence: '老师正在耐心地教我们读书。' }
+            ],
+            'write': [
+                { word: '门', pinyin: 'mén', english: 'door', sentence: '进教室前要先敲门。' },
+                { word: '口', pinyin: 'kǒu', english: 'mouth / entrance', sentence: '小弟弟张开口吃苹果。' },
+                { word: '手', pinyin: 'shǒu', english: 'hand', sentence: '吃饭前我们要把手洗干净。' },
+                { word: '大', pinyin: 'dà', english: 'big', sentence: '这个西瓜非常大。' },
+                { word: '山', pinyin: 'shān', english: 'mountain', sentence: '那座高山上面有许多绿色的树林。' },
+                { word: '日', pinyin: 'rì', english: 'sun / day', sentence: '星期日，爸爸带我去游乐场玩。' }
+            ]
+        },
+        'P2': {
+            'read': [
+                { word: '美丽', pinyin: 'měi lì', english: 'beautiful', sentence: '新加坡是一个美丽的城市。' },
+                { word: '觉得', pinyin: 'jué de', english: 'to think / feel', sentence: '我觉得今天的听写一点也不难。' },
+                { word: '事情', pinyin: 'shì qing', english: 'thing / matter', sentence: '今天学校里发生了一件有趣的事情。' },
+                { word: '帮忙', pinyin: 'bāng máng', english: 'to help / assist', sentence: '谢谢你经常主动帮忙做家务。' },
+                { word: '干净', pinyin: 'gān jìng', english: 'clean', sentence: '地已经被我扫得很干净了。' },
+                { word: '游戏', pinyin: 'yóu xì', english: 'game', sentence: '课间休息时，我和同学一起玩游戏。' }
+            ],
+            'write': [
+                { word: '风', pinyin: 'fēng', english: 'wind', sentence: '外面的风很大，树叶都在动。' },
+                { word: '王', pinyin: 'wáng', english: 'king', sentence: '狮子是森林里的万兽之王。' },
+                { word: '早', pinyin: 'zǎo', english: 'early / morning', sentence: '大家早上好！' },
+                { word: '左', pinyin: 'zuǒ', english: 'left', sentence: '过马路时要先往右看，再往左看。' },
+                { word: '右', pinyin: 'yòu', english: 'right', sentence: '请举起你的右手。' },
+                { word: '出', pinyin: 'chū', english: 'go out / exit', sentence: '我们排着队走出教室。' }
+            ]
+        },
+        'P3/4': {
+            'read': [
+                { word: '科学', pinyin: 'kē xué', english: 'science', sentence: '我对科学课上的实验非常感兴趣。' },
+                { word: '邻居', pinyin: 'lín jū', english: 'neighbor', sentence: '邻居叔叔经常帮我们浇花。' },
+                { word: '应该', pinyin: 'yīng gāi', english: 'should / ought to', sentence: '我们应该主动去帮助有需要的人。' },
+                { word: '简单', pinyin: 'jiǎn dān', english: 'simple / easy', sentence: '这道数学题比我想象中要简单。' },
+                { word: '环境', pinyin: 'huán jìng', english: 'environment', sentence: '保护环境，人人有责。' },
+                { word: '努力', pinyin: 'nǔ lì', english: 'hardworking / effort', sentence: '只要坚持努力，你就一定能取得好成绩。' }
+            ],
+            'write': [
+                { word: '练习', pinyin: 'liàn xí', english: 'to practice / exercise', sentence: '只要天天练习，写字就会越来越好看。' },
+                { word: '准备', pinyin: 'zhǔn bèi', english: 'to prepare', sentence: '妈妈正在厨房准备晚餐。' },
+                { word: '特别', pinyin: 'tè bié', english: 'special / especially', sentence: '今天的天空特别蓝，真好看！' },
+                { word: '如果', pinyin: 'rú guǒ', english: 'if / in case', sentence: '如果明天下雨，我们就留在家中。' },
+                { word: '发现', pinyin: 'fā xiàn', english: 'to discover / realize', sentence: '我发现桌上的苹果少了一个。' },
+                { word: '开始', pinyin: 'kāi shǐ', english: 'to start / begin', sentence: '铃声响了，考试正式开始。' }
+            ]
+        }
+    };
+
+    let currentGrade = 'P1';
+    let currentType = 'read';
+    let currentIndex = 0;
+    let currentDeck = [];
+
+    const card = document.getElementById('card');
+
+    function updateDeck() {
+        currentDeck = wordDatabase[currentGrade][currentType];
+        currentIndex = 0;
+        card.classList.remove('flipped');
+        renderCard();
+    }
+
+    function renderCard() {
+        if (currentDeck.length === 0) return;
+        const currentItem = currentDeck[currentIndex];
+        
+        // Render base texts
+        document.getElementById('char-display').textContent = currentItem.word;
+        document.getElementById('pinyin-display').textContent = currentItem.pinyin;
+        document.getElementById('english-display').textContent = currentItem.english;
+        document.getElementById('example-display').textContent = currentItem.sentence;
+        
+        // Handle Stroke order and Writing view (Only for "Write" list)
+        const strokeContainer = document.getElementById('stroke-container');
+        const strokeGrid = document.getElementById('stroke-grid');
+        strokeGrid.innerHTML = ''; // clear previous grid
+
+        if (currentType === 'write') {
+            strokeContainer.style.display = 'flex';
+            // Split word into individual characters and draw tracing box
+            Array.from(currentItem.word).forEach(char => {
+                const box = document.createElement('div');
+                box.className = 'grid-box';
+                box.textContent = char;
+                strokeGrid.appendChild(box);
+            });
+        } else {
+            strokeContainer.style.display = 'none';
+        }
+
+        // Update Counter
+        document.getElementById('card-counter').textContent = `Card ${currentIndex + 1} of ${currentDeck.length}`;
+    }
+
+    // Pronunciation Audio (Web Speech Engine)
+    function speakWord(event) {
+        event.stopPropagation(); // Stop card from flipping when tapping the speaker
+        const currentItem = currentDeck[currentIndex];
+        if (!currentItem) return;
+
+        // Uses Browser Native Speech Synthesis
+        const utterance = new SpeechSynthesisUtterance(currentItem.word);
+        utterance.lang = 'zh-CN'; // Set language to Standard Chinese (Mandarin)
+        utterance.rate = 0.8;    // Slightly slower speed so kids can hear tones clearly
+        
+        // Cancel any ongoing speech and play new
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function flipCard() {
+        card.classList.toggle('flipped');
+    }
+
+    function nextCard(event) {
+        event.stopPropagation();
+        card.classList.remove('flipped');
+        setTimeout(() => {
+            currentIndex = (currentIndex + 1) % currentDeck.length;
+            renderCard();
+        }, 150);
+    }
+
+    function prevCard(event) {
+        event.stopPropagation();
+        card.classList.remove('flipped');
+        setTimeout(() => {
+            currentIndex = (currentIndex - 1 + currentDeck.length) % currentDeck.length;
+            renderCard();
+        }, 150);
+    }
+
+    function setGrade(grade) {
+        currentGrade = grade;
+        updateActiveBtn('grade-filters', grade);
+        updateDeck();
+    }
+
+    function setType(type) {
+        currentType = type;
+        updateActiveBtn('type-filters', type);
+        updateDeck();
+    }
+
+    function updateActiveBtn(groupId, value) {
+        const buttons = document.querySelectorAll(`#${groupId} .filter-btn`);
+        buttons.forEach(btn => {
+            if (btn.textContent.includes(value === 'read' ? 'Read' : value === 'write' ? 'Write' : value)) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+
+    // Initialize
+    updateDeck();
+</script>
+
+</body>
+</html>
