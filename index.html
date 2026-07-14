@@ -162,8 +162,8 @@
 
         .canvas-controls {
             display: flex;
-            justify-content: flex-end;
-            gap: 8px;
+            justify-content: space-between;
+            align-items: center;
             margin-top: -4px;
         }
 
@@ -281,6 +281,9 @@
         </div>
 
         <div class="canvas-controls">
+            <button class="action-btn" onclick="reshuffleCurrentWorksheet()" style="background-color: #f1f5f9; border-color: #cbd5e1; color: var(--text-dark);">
+                🔀 Reshuffle List
+            </button>
             <button class="action-btn" onclick="clearCanvas()" style="background-color: #fee2e2; border-color: #fca5a5; color: var(--accent);">
                 🧹 Clear Pad
             </button>
@@ -303,7 +306,7 @@
 </div>
 
 <script>
-    // 100% accurate transcription of Worksheet 3 & Worksheet 4
+    // Worksheet Database
     const syllabusDatabase = {
         'WS3': [
             { word: '街上', pinyin: 'jiē shang', english: 'On the street', type: 'word' },
@@ -329,7 +332,7 @@
             { word: '注意安全', pinyin: 'zhù yì ān quán', english: 'Pay attention to safety / Stay safe', type: 'word' },
             { word: '皱着眉头', pinyin: 'zhòu zhe méi tóu', english: 'Frowning', type: 'word' },
             { word: '归还碗盘', pinyin: 'guī huán wǎn pán', english: 'Return bowls and plates', type: 'word' },
-            { word: '干净的食堂', pinyin: 'gān jìng de shí táng', english: 'Clean canteen', type: 'word' },
+            { word: '干净的食堂', pinyin: 'gān jing de shí táng', english: 'Clean canteen', type: 'word' },
             { word: '难为情', pinyin: 'nán wéi qíng', english: 'Embarrassed', type: 'usage' },
             { word: '影响', pinyin: 'yǐng xiǎng', english: 'To influence / affect', type: 'usage' },
             { word: '责任感', pinyin: 'zé rèn gǎn', english: 'Sense of responsibility', type: 'usage' },
@@ -348,6 +351,16 @@
     const canvas = document.getElementById('paint-canvas');
     const ctx = canvas.getContext('2d');
     let drawing = false;
+
+    // Fisher-Yates Shuffling Function
+    function shuffleArray(array) {
+        let shuffled = [...array]; // Create a copy so we don't destroy the original template
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
 
     // Resize canvas based on layout dimensions
     function resizeCanvas() {
@@ -409,6 +422,8 @@
     function setWorksheet(sheetName) {
         activeSheet = sheetName;
         currentIdx = 0;
+        
+        // Update UI Tabs
         document.querySelectorAll('.filter-btn').forEach(btn => {
             if (btn.outerHTML.includes(sheetName)) {
                 btn.classList.add('active');
@@ -416,11 +431,21 @@
                 btn.classList.remove('active');
             }
         });
+
+        // 🔀 Auto-shuffle words for this session!
+        list = shuffleArray(syllabusDatabase[activeSheet]);
+        loadWord();
+    }
+
+    // Manual reshuffle handler
+    function reshuffleCurrentWorksheet() {
+        currentIdx = 0;
+        list = shuffleArray(syllabusDatabase[activeSheet]);
         loadWord();
     }
 
     function loadWord() {
-        list = syllabusDatabase[activeSheet];
+        if (list.length === 0) return;
         const item = list[currentIdx];
 
         // Hide hint and answer panels
