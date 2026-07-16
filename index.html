@@ -55,6 +55,7 @@
             margin-bottom: 12px;
             display: flex;
             justify-content: center;
+            flex-wrap: wrap;
             gap: 8px;
         }
 
@@ -134,7 +135,7 @@
             border: 2px dashed #cbd5e1;
             border-radius: 12px;
             overflow: hidden;
-            touch-action: none; /* Prevents scrolling while drawing */
+            touch-action: none;
         }
 
         /* Calligraphy background grid */
@@ -252,8 +253,10 @@
 
     <!-- Filter by Syllabus/Worksheet -->
     <div class="filter-group">
-        <button class="filter-btn active" onclick="setWorksheet('WS3')">听写 (三) 妈妈，对不起</button>
-        <button class="filter-btn" onclick="setWorksheet('WS4')">听写 (四) 今天我值日</button>
+        <button class="filter-btn active" onclick="setWorksheet('WS10')">听写十</button>
+        <button class="filter-btn" onclick="setWorksheet('WS11')">听写十一</button>
+        <button class="filter-btn" onclick="setWorksheet('WS12')">听写十二</button>
+        <button class="filter-btn" onclick="setWorksheet('WS13')">听写十三</button>
     </div>
 
     <!-- Active Card Arena -->
@@ -300,61 +303,96 @@
     <!-- Navigation Footer -->
     <div class="nav-controls">
         <button class="nav-btn" onclick="prevWord()">← Previous</button>
-        <span class="counter" id="tracker">Word 1 of 15</span>
+        <span class="counter" id="tracker">Word 1 of 16</span>
         <button class="nav-btn" onclick="nextWord()">Next →</button>
     </div>
 </div>
 
 <script>
-    // Worksheet Database
+    // Worksheet Database (Updated to new sheets 10-13)
     const syllabusDatabase = {
-        'WS3': [
-            { word: '街上', pinyin: 'jiē shang', english: 'On the street', type: 'word' },
-            { word: '警察', pinyin: 'jǐng chá', english: 'Police / Policeman', type: 'word' },
-            { word: '煮饭', pinyin: 'zhǔ fàn', english: 'To cook rice / meals', type: 'word' },
-            { word: '补习', pinyin: 'bǔ xí', english: 'Tuition / Supplementary classes', type: 'word' },
-            { word: '半夜', pinyin: 'bàn yè', english: 'Midnight / Middle of the night', type: 'word' },
-            { word: '流下眼泪', pinyin: 'liú xià yǎn lèi', english: 'Shed tears / Start crying', type: 'word' },
-            { word: '睁开眼睛', pinyin: 'zhēng kāi yǎn jing', english: 'Open one\'s eyes', type: 'word' },
-            { word: '一碗云吞面', pinyin: 'yī wǎn yún tūn miàn', english: 'A bowl of wanton noodles', type: 'word' },
-            { word: '脾气', pinyin: 'pí qì', english: 'Temper', type: 'usage' },
-            { word: '尊敬', pinyin: 'zūn jìng', english: 'To respect / revere', type: 'usage' },
-            { word: '长辈', pinyin: 'zhǎng bèi', english: 'Elders / Older generations', type: 'usage' },
-            { word: '舍不得', pinyin: 'shě bù de', english: 'Loath to part with / Reluctant to leave', type: 'usage' },
-            { word: '后悔', pinyin: 'hòu huǐ', english: 'To regret', type: 'usage' },
-            { word: '迷上', pinyin: 'mí shàng', english: 'Obsessed with / Addicted to', type: 'usage' },
-            { word: '健文挥动着手臂，十分激动，大声地说。', pinyin: 'jiàn wén huī dòng zhe shǒu bì, shí fēn jī dòng, dà shēng de shuō.', english: 'Jianwen waved his arm, very excited, and said loudly.', type: 'sentence' }
+        'WS10': [
+            { word: '玩耍', pinyin: 'wán shuǎ', english: 'To play / sports / amuse oneself', type: 'word' },
+            { word: '有礼貌', pinyin: 'yǒu lǐ mào', english: 'Polite / Courteous', type: 'word' },
+            { word: '炒米粉', pinyin: 'chǎo mǐ fěn', english: 'Fried rice vermicelli', type: 'word' },
+            { word: '占位子', pinyin: 'zhàn wèi zi', english: 'Occupy a seat / Chope place', type: 'word' },
+            { word: '互相帮助', pinyin: 'hù xiāng bāng zhù', english: 'Help each other', type: 'word' },
+            { word: '大喊大叫', pinyin: 'dà hǎn dà jiào', english: 'Shouting and screaming', type: 'word' },
+            { word: '清洁工人', pinyin: 'qīng jié gōng rén', english: 'Cleaner / Sanitation worker', type: 'word' },
+            { word: '推开大门', pinyin: 'tuī kāi dà mén', english: 'Push open the main door', type: 'word' },
+            { word: '水洒了一地', pinyin: 'shuǐ sǎ le yī dì', english: 'Water spilled all over the floor', type: 'word' },
+            { word: '显得', pinyin: 'xiǎn de', english: 'To appear / look / seem', type: 'usage' },
+            { word: '不管', pinyin: 'bù guǎn', english: 'No matter / regardless of', type: 'usage' },
+            { word: '无礼', pinyin: 'wú lǐ', english: 'Rude / Impolite', type: 'usage' },
+            { word: '不肯', pinyin: 'bù kěn', english: 'Refuse to / unwilling to', type: 'usage' },
+            { word: '理睬', pinyin: 'lǐ cǎi', english: 'Pay attention to / show interest in', type: 'usage' },
+            { word: '不耐烦', pinyin: 'bú nài fán', english: 'Impatient', type: 'usage' },
+            { word: '她高兴得满脸通红，两只又圆又亮的眼睛，闪着光芒。', pinyin: 'tā gāo xìng de mǎn liǎn tōng hóng, liǎng zhī yòu yuán yòu liàng de yǎn jing, shǎn zhe guāng máng.', english: 'She was so happy her face flushed red, and her two round, bright eyes shone with radiance.', type: 'sentence' }
         ],
-        'WS4': [
-            { word: '值日生', pinyin: 'zhí rì shēng', english: 'Student on duty', type: 'word' },
-            { word: '插队', pinyin: 'chā duì', english: 'Jump queue / Cut in line', type: 'word' },
-            { word: '安静', pinyin: 'ān jìng', english: 'Quiet', type: 'word' },
-            { word: '注意安全', pinyin: 'zhù yì ān quán', english: 'Pay attention to safety / Stay safe', type: 'word' },
-            { word: '皱着眉头', pinyin: 'zhòu zhe méi tóu', english: 'Frowning', type: 'word' },
-            { word: '归还碗盘', pinyin: 'guī huán wǎn pán', english: 'Return bowls and plates', type: 'word' },
-            { word: '干净的食堂', pinyin: 'gān jing de shí táng', english: 'Clean canteen', type: 'word' },
-            { word: '难为情', pinyin: 'nán wéi qíng', english: 'Embarrassed', type: 'usage' },
-            { word: '影响', pinyin: 'yǐng xiǎng', english: 'To influence / affect', type: 'usage' },
-            { word: '责任感', pinyin: 'zé rèn gǎn', english: 'Sense of responsibility', type: 'usage' },
-            { word: '提醒', pinyin: 'tí xǐng', english: 'To remind', type: 'usage' },
-            { word: '由于', pinyin: 'yóu yú', english: 'Due to / because of', type: 'usage' },
-            { word: '保证', pinyin: 'bǎo zhèng', english: 'To guarantee / promise', type: 'usage' },
-            { word: '妈妈心中的怒火像火山一样喷发出来，她严厉地瞪着健文。', pinyin: 'mā ma xīn zhōng de nù huǒ xiàng huǒ shān yī yàng pēn fā chū lái, tā yán lì de dèng zhe jiàn wén.', english: 'The anger in mother\'s heart erupted like a volcano, and she stared sternly at Jianwen.', type: 'sentence' }
+        'WS11': [
+            { word: '乐曲', pinyin: 'yuè qǔ', english: 'Musical composition / tune', type: 'word' },
+            { word: '奔跑', pinyin: 'bēn pǎo', english: 'To run quickly / gallop', type: 'word' },
+            { word: '年级', pinyin: 'nián jí', english: 'Grade / Year level in school', type: 'word' },
+            { word: '领奖台', pinyin: 'lǐng jiǎng tái', english: 'Award podium', type: 'word' },
+            { word: '大声欢呼', pinyin: 'dà shēng huān hū', english: 'Cheer loudly', type: 'word' },
+            { word: '到达终点', pinyin: 'dào dá zhōng diǎn', english: 'Reach the finish line', type: 'word' },
+            { word: '计时开始', pinyin: 'jì shí kāi shǐ', english: 'Timing starts / Start counting time', type: 'word' },
+            { word: '发出指令', pinyin: 'fā chū zhǐ lìng', english: 'Issue orders / commands', type: 'word' },
+            { word: '既', pinyin: 'jì', english: 'Both / As well as / Already', type: 'usage' },
+            { word: '焦虑', pinyin: 'jiāo lǜ', english: 'Anxious / Apprehensive', type: 'usage' },
+            { word: '挥动', pinyin: 'huī dòng', english: 'To wave / swing', type: 'usage' },
+            { word: '取得', pinyin: 'qǔ dé', english: 'To obtain / acquire / achieve', type: 'usage' },
+            { word: '优秀', pinyin: 'yóu xiù', english: 'Excellent / Outstanding', type: 'usage' },
+            { word: '不顾一切', pinyin: 'bú gù yī qiè', english: 'Recklessly / Regardless of everything', type: 'usage' },
+            { word: '我听了，高兴得一蹦三尺高，不禁欢呼起来。', pinyin: 'wǒ tīng le, gāo xìng de yī bèng sān chǐ gāo, bù jīn huān hū qǐ lái.', english: 'Hearing it, I leaped high in the air out of joy, and couldn\'t help but cheer aloud.', type: 'sentence' }
+        ],
+        'WS12': [
+            { word: '商店', pinyin: 'shāng diàn', english: 'Shop / Store', type: 'word' },
+            { word: '植物园', pinyin: 'zhí wù yuán', english: 'Botanical Gardens', type: 'word' },
+            { word: '士兵', pinyin: 'shì bīng', english: 'Soldier', type: 'word' },
+            { word: '看展览', pinyin: 'kàn zhǎn lǎn', english: 'View an exhibition', type: 'word' },
+            { word: '旅游景点', pinyin: 'lǚ yóu jǐng diǎn', english: 'Tourist attraction', type: 'word' },
+            { word: '东南西北', pinyin: 'dōng nán xī běi', english: 'East, South, West, North (All directions)', type: 'word' },
+            { word: '露出微笑', pinyin: 'lù chū wēi xiào', english: 'Reveal a smile', type: 'word' },
+            { word: '围', pinyin: 'wéi', english: 'To surround / encircle / wrap around', type: 'usage' },
+            { word: '纪念', pinyin: 'jì niàn', english: 'To commemorate / Souvenir', type: 'usage' },
+            { word: '握', pinyin: 'wò', english: 'To hold / grip / shake hands', type: 'usage' },
+            { word: '度过', pinyin: 'dù guò', english: 'To spend time / pass time', type: 'usage' },
+            { word: '充实', pinyin: 'chōng shí', english: 'Fulfilling / Rich / Meaningful', type: 'usage' },
+            { word: '一阵', pinyin: 'yī zhèn', english: 'A burst / spell / period of time', type: 'usage' },
+            { word: '我紧张得张开了嘴巴，呆呆地站在那儿，心里忐忑不安。', pinyin: 'wǒ jǐn zhāng de zhāng kāi le zuǐ ba, dāi dāi de zhàn zài nàr, xīn lǐ tǎn tè bù ān.', english: 'I was so nervous my mouth hung open, standing there blankly, with an uneasy heart.', type: 'sentence' }
+        ],
+        'WS13': [
+            { word: '猴子', pinyin: 'hóu zi', english: 'Monkey', type: 'word' },
+            { word: '男孩', pinyin: 'nán hái', english: 'Boy', type: 'word' },
+            { word: '花盆', pinyin: 'huā pén', english: 'Flowerpot', type: 'word' },
+            { word: '一文', pinyin: 'yī zhàng', english: 'One Zhang (Measurement unit / a high height / depth)', type: 'word' },
+            { word: '老婆婆', pinyin: 'lǎo pó po', english: 'Old lady / Granny', type: 'word' },
+            { word: '一扇门', pinyin: 'yí shàn mén', english: 'A door', type: 'word' },
+            { word: '摸着宝贝', pinyin: 'mō zhe bǎo bèi', english: 'Touching the treasure', type: 'word' },
+            { word: '怒气冲冲', pinyin: 'nù qì chōng chōng', english: 'Furious / In a towering rage', type: 'word' },
+            { word: '拆开礼物', pinyin: 'chāi kāi lǐ wù', english: 'Unwrap a gift', type: 'word' },
+            { word: '费了九牛二虎之力', pinyin: 'fèi le jiǔ niú èr hǔ zhī lì', english: 'Exert tremendous effort / Herculean effort', type: 'word' },
+            { word: '承认', pinyin: 'chéng rèn', english: 'To admit / acknowledge / confess', type: 'usage' },
+            { word: '挑选', pinyin: 'tiāo xuǎn', english: 'To select / choose out', type: 'usage' },
+            { word: '特别', pinyin: 'tè bié', english: 'Special / Unique / Especially', type: 'usage' },
+            { word: '本领', pinyin: 'běn lǐng', english: 'Skill / Ability / Capability', type: 'usage' },
+            { word: '立刻', pinyin: 'lì kè', english: 'Immediately / Right away', type: 'usage' },
+            { word: '自言自语', pinyin: 'zì yán zì yǔ', english: 'Talk to oneself / Soliloquize', type: 'usage' },
+            { word: '我的心里羞愧极了，像有无数的拳头在打我的心。', pinyin: 'wǒ de xīn lǐ xiū kuì jí le, xiàng yǒu wú shù de quán tou zài dǎ wǒ de xīn.', english: 'My heart was filled with intense shame, as if countless fists were pounding inside it.', type: 'sentence' }
         ]
     };
 
-    let activeSheet = 'WS3';
+    let activeSheet = 'WS10';
     let currentIdx = 0;
     let list = [];
 
-    // Drawing Canvas Config
     const canvas = document.getElementById('paint-canvas');
     const ctx = canvas.getContext('2d');
     let drawing = false;
 
-    // Fisher-Yates Shuffling Function
     function shuffleArray(array) {
-        let shuffled = [...array]; // Create a copy so we don't destroy the original template
+        let shuffled = [...array];
         for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
@@ -362,7 +400,6 @@
         return shuffled;
     }
 
-    // Resize canvas based on layout dimensions
     function resizeCanvas() {
         const rect = canvas.parentElement.getBoundingClientRect();
         canvas.width = rect.width;
@@ -370,7 +407,6 @@
         clearCanvas();
     }
 
-    // Capture stroke drawing coordinates
     function getPos(e) {
         const rect = canvas.getBoundingClientRect();
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -404,7 +440,6 @@
         ctx.closePath();
     }
 
-    // Configure Listeners for Mouse and Touch (Tablets/Phones)
     canvas.addEventListener('mousedown', startDraw);
     canvas.addEventListener('mousemove', draw);
     canvas.addEventListener('mouseup', stopDraw);
@@ -418,26 +453,22 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
-    // App Navigation Control Logic
     function setWorksheet(sheetName) {
         activeSheet = sheetName;
         currentIdx = 0;
         
-        // Update UI Tabs
         document.querySelectorAll('.filter-btn').forEach(btn => {
-            if (btn.outerHTML.includes(sheetName)) {
+            if (btn.getAttribute('onclick').includes(sheetName)) {
                 btn.classList.add('active');
             } else {
                 btn.classList.remove('active');
             }
         });
 
-        // 🔀 Auto-shuffle words for this session!
         list = shuffleArray(syllabusDatabase[activeSheet]);
         loadWord();
     }
 
-    // Manual reshuffle handler
     function reshuffleCurrentWorksheet() {
         currentIdx = 0;
         list = shuffleArray(syllabusDatabase[activeSheet]);
@@ -448,28 +479,23 @@
         if (list.length === 0) return;
         const item = list[currentIdx];
 
-        // Hide hint and answer panels
         document.getElementById('hint-box').style.display = 'none';
         document.getElementById('reveal-box').style.display = 'none';
         clearCanvas();
 
-        // Populate hidden details
         document.getElementById('hint-text').innerHTML = `<strong>${item.pinyin}</strong> — ${item.english}`;
         document.getElementById('reveal-char').textContent = item.word;
         document.getElementById('reveal-pinyin').textContent = item.pinyin;
         document.getElementById('reveal-translation').textContent = item.english;
 
-        // Auto adjusting sizing for long dictation sentences
         if(item.type === 'sentence') {
             document.getElementById('reveal-char').style.fontSize = '1.6rem';
         } else {
             document.getElementById('reveal-char').style.fontSize = '3rem';
         }
 
-        // Update Tracker Progress
         document.getElementById('tracker').textContent = `${currentIdx + 1} of ${list.length}`;
 
-        // Auto vocalize the word immediately
         setTimeout(playAudio, 400);
     }
 
@@ -477,10 +503,10 @@
         const item = list[currentIdx];
         if (!item) return;
 
-        window.speechSynthesis.cancel(); // kill overlapping voice cues
+        window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(item.word);
         utterance.lang = 'zh-CN';
-        utterance.rate = 0.75; // Slower cadence so child can listen closely to characters
+        utterance.rate = 0.75;
         window.speechSynthesis.speak(utterance);
     }
 
@@ -492,7 +518,6 @@
     function revealAnswer() {
         const revealBox = document.getElementById('reveal-box');
         revealBox.style.display = 'flex';
-        // Auto scroll to make revealed word visible
         revealBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
@@ -510,10 +535,9 @@
         }
     }
 
-    // Initialize setup
     window.addEventListener('load', () => {
         resizeCanvas();
-        setWorksheet('WS3');
+        setWorksheet('WS10');
     });
     window.addEventListener('resize', resizeCanvas);
 </script>
